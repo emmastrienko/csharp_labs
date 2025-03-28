@@ -1,0 +1,14 @@
+C:\Users\acer\Desktop\University\sem_3_2\net\lab_1\bin\Debug\net9.0\lab_1.exe
+C:\Users\acer\Desktop\University\sem_3_2\net\lab_1\bin\Debug\net9.0\lab_1.deps.json
+C:\Users\acer\Desktop\University\sem_3_2\net\lab_1\bin\Debug\net9.0\lab_1.runtimeconfig.json
+C:\Users\acer\Desktop\University\sem_3_2\net\lab_1\bin\Debug\net9.0\lab_1.dll
+C:\Users\acer\Desktop\University\sem_3_2\net\lab_1\bin\Debug\net9.0\lab_1.pdb
+C:\Users\acer\Desktop\University\sem_3_2\net\lab_1\obj\Debug\net9.0\lab_1.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\acer\Desktop\University\sem_3_2\net\lab_1\obj\Debug\net9.0\lab_1.AssemblyInfoInputs.cache
+C:\Users\acer\Desktop\University\sem_3_2\net\lab_1\obj\Debug\net9.0\lab_1.AssemblyInfo.cs
+C:\Users\acer\Desktop\University\sem_3_2\net\lab_1\obj\Debug\net9.0\lab_1.csproj.CoreCompileInputs.cache
+C:\Users\acer\Desktop\University\sem_3_2\net\lab_1\obj\Debug\net9.0\lab_1.dll
+C:\Users\acer\Desktop\University\sem_3_2\net\lab_1\obj\Debug\net9.0\refint\lab_1.dll
+C:\Users\acer\Desktop\University\sem_3_2\net\lab_1\obj\Debug\net9.0\lab_1.pdb
+C:\Users\acer\Desktop\University\sem_3_2\net\lab_1\obj\Debug\net9.0\lab_1.genruntimeconfig.cache
+C:\Users\acer\Desktop\University\sem_3_2\net\lab_1\obj\Debug\net9.0\ref\lab_1.dll

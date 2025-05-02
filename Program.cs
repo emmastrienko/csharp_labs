@@ -1,7 +1,166 @@
 ﻿﻿using System;
 using System.Linq;
 using System.Collections;
+using System.Diagnostics;
 using System.Collections.Generic;
+using System.Collections.Immutable;
+
+public class TestCollections<TKey, TValue>
+    where TKey : class
+    where TValue : class, IDateAndCopy
+{
+  public List<TKey> ListKey { get; }
+  public List<string> ListString { get; }
+  public Dictionary<TKey, TValue> DictKey { get; }
+  public Dictionary<string, TValue> DictString { get; }
+  public List<TValue> ListValue { get; }  // Add a ListValue property to store the TValue data
+
+  public TestCollections(int size, Func<int, (TKey key, TValue value)> generator)
+  {
+    ListKey = new List<TKey>(size);
+    ListString = new List<string>(size);
+    DictKey = new Dictionary<TKey, TValue>(size);
+    DictString = new Dictionary<string, TValue>(size);
+    ListValue = new List<TValue>(size);  // Initialize the ListValue to store TValue data
+
+    for (int i = 0; i < size; i++)
+    {
+      var (key, value) = generator(i);
+      ListKey.Add(key);
+      ListString.Add(key.ToString()!);
+      DictKey[key] = value;
+      DictString[key.ToString()!] = value;
+      ListValue.Add(value);  // Add the TValue (student) to ListValue
+    }
+  }
+
+
+  public void TestSearchAll(int v)
+  {
+    var elementsToSearch = new List<(string name, TKey key)>
+    {
+        ("Перший", ListKey.First()),
+        ("Центральний", ListKey[ListKey.Count / 2]),
+        ("Останній", ListKey.Last()),
+        ("Відсутній", GenerateMissingKey())
+    };
+
+    foreach (var (name, key) in elementsToSearch)
+    {
+      string keyStr = key.ToString()!;
+      Console.WriteLine($"\nПошук елемента: {name}");
+
+      var sw = new System.Diagnostics.Stopwatch();
+
+      sw.Restart();
+      ListKey.Contains(key);
+      sw.Stop();
+      Console.WriteLine($"List<TKey>: {sw.ElapsedTicks} ticks");
+
+      sw.Restart();
+      ListString.Contains(keyStr);
+      sw.Stop();
+      Console.WriteLine($"List<string>: {sw.ElapsedTicks} ticks");
+
+      sw.Restart();
+      DictKey.ContainsKey(key);
+      sw.Stop();
+      Console.WriteLine($"Dictionary<TKey, TValue>: {sw.ElapsedTicks} ticks");
+
+      sw.Restart();
+      DictString.ContainsKey(keyStr);
+      sw.Stop();
+      Console.WriteLine($"Dictionary<string, TValue>: {sw.ElapsedTicks} ticks");
+
+      sw.Restart();
+      DictKey.ContainsValue(DictKey.GetValueOrDefault(key)!); // Для коректного елементу
+      sw.Stop();
+      Console.WriteLine($"Dictionary<TKey, TValue> (ContainsValue): {sw.ElapsedTicks} ticks");
+    }
+  }
+
+  // Метод генерації ключа, якого точно немає в колекції
+  private TKey GenerateMissingKey()
+  {
+    // В залежності від типу TKey, створити новий унікальний об'єкт
+    if (typeof(TKey) == typeof(Person))
+    {
+      var person = new Person("Інший", "Ключ", new DateTime(1800, 1, 1));
+      return (TKey)(object)person;
+    }
+
+    throw new InvalidOperationException("Невідомий тип TKey для генерації відсутнього елемента");
+  }
+
+}
+
+
+
+public class TestCollectionsImmutable<TKey, TValue>
+{
+  private ImmutableList<TKey> keyList;
+  private ImmutableDictionary<TKey, TValue> keyValueDict;
+
+  public TestCollectionsImmutable(IEnumerable<TKey> keys, IEnumerable<TValue> values)
+  {
+    var keysList = keys.ToList();
+    var valuesList = values.ToList();
+
+    var tempDict = ImmutableDictionary<TKey, TValue>.Empty.ToBuilder();
+    for (int i = 0; i < keysList.Count; i++)
+    {
+      tempDict[keysList[i]] = valuesList[i];
+    }
+
+    keyList = keysList.ToImmutableList();
+    keyValueDict = tempDict.ToImmutable();
+  }
+
+  public bool ContainsKey(TKey key)
+  {
+    return keyList.Contains(key); // Linear
+  }
+
+  public bool ContainsKeyInDict(TKey key)
+  {
+    return keyValueDict.ContainsKey(key); // O(log n)
+  }
+}
+
+
+public class TestCollectionsSorted<TKey, TValue> where TKey : notnull
+{
+  private SortedList<TKey, TValue> sortedList;
+  private SortedDictionary<TKey, TValue> sortedDict;
+
+  public TestCollectionsSorted(IEnumerable<TKey> keys, IEnumerable<TValue> values)
+  {
+    sortedList = new SortedList<TKey, TValue>();
+    sortedDict = new SortedDictionary<TKey, TValue>();
+
+    var keyArray = keys.ToArray();
+    var valueArray = values.ToArray();
+
+    for (int i = 0; i < keyArray.Length; i++)
+    {
+      sortedList[keyArray[i]] = valueArray[i];
+      sortedDict[keyArray[i]] = valueArray[i];
+    }
+  }
+
+  public bool ContainsKeyInList(TKey key)
+  {
+    return sortedList.ContainsKey(key); // O(log n)
+  }
+
+  public bool ContainsKeyInDict(TKey key)
+  {
+    return sortedDict.ContainsKey(key); // O(log n)
+  }
+}
+
+
+
 
 public class StudentEnumerator : IEnumerator<string>
 {
@@ -84,11 +243,23 @@ public class Exam
   }
 }
 
-public class Person
+public class Person : IComparable<Person>, IComparer<Person>
 {
   public string Name { get; init; }
   public string Surname { get; init; }
   public DateTime BirthDate { get; init; }
+
+  // Порівняння по прізвищу
+  public int CompareTo(Person other)
+  {
+    return this.Surname.CompareTo(other.Surname);
+  }
+
+  // Порівняння по даті народження
+  public int Compare(Person x, Person y)
+  {
+    return x.BirthDate.CompareTo(y.BirthDate);
+  }
 
   public Person(string name, string surname, DateTime birthDate)
   {
@@ -179,7 +350,7 @@ public class Student : Person, IDateAndCopy, IEnumerable<string>
   // Конструктор за замовчуванням
   public Student() : this(new Person(), Education.Bachelor, 0) { }
 
-
+  public SortedList<int, Student> Students { get; set; } = new SortedList<int, Student>();
 
   public IEnumerable GetAllResults()
   {
@@ -198,7 +369,6 @@ public class Student : Person, IDateAndCopy, IEnumerable<string>
     }
   }
 
-
   public IEnumerator<string> GetEnumerator()
   {
     return new StudentEnumerator(_tests, _exams);
@@ -208,8 +378,6 @@ public class Student : Person, IDateAndCopy, IEnumerable<string>
   {
     return GetEnumerator();
   }
-
-
 
   public IEnumerable PassedItems()
   {
@@ -231,10 +399,6 @@ public class Student : Person, IDateAndCopy, IEnumerable<string>
         yield return test;
     }
   }
-
-
-
-
 
   // Властивість Person
   public Person PersonalInfo => this;
@@ -272,6 +436,10 @@ public class Student : Person, IDateAndCopy, IEnumerable<string>
       return sum / _exams.Count;
     }
   }
+
+  public Person BaseKey => new(Name, Surname, BirthDate);
+
+  public Person GetBaseKey() => new(Name, Surname, BirthDate);
 
   // Метод додавання екзаменів
   public void AddExams(params Exam[] exams)
@@ -316,6 +484,54 @@ public class Student : Person, IDateAndCopy, IEnumerable<string>
   // Індексатор
   public bool this[Education edu] => Education == edu;
 }
+
+public class StudentCollection
+{
+  private List<Student> students = new();
+
+  public void AddDefaults()
+  {
+    students.Add(new Student(new Person("Default", "Student", new DateTime(2000, 1, 1)), Education.Bachelor, 101));
+  }
+
+  public void AddStudents(params Student[] newStudents)
+  {
+    students.AddRange(newStudents);
+  }
+
+  public void SortBySurname()
+  {
+    students.Sort(); // використовує IComparable
+  }
+
+  public void SortByDate()
+  {
+    students.Sort((s1, s2) => s1.BirthDate.CompareTo(s2.BirthDate));
+  }
+
+  public void SortByAverageMark()
+  {
+    students.Sort((s1, s2) => s1.AverageGrade.CompareTo(s2.AverageGrade));
+  }
+
+  public double MaxAverageMark => students.Count == 0 ? 0 : students.Max(s => s.AverageGrade);
+
+  public IEnumerable<Student> OnlyMasters => students.Where(s => s.Education == Education.Master);
+
+  public IEnumerable<IGrouping<double, Student>> AverageMarkGroup(double value)
+  {
+    return students
+        .Where(s => Math.Abs(s.AverageGrade - value) < 0.01) // точне порівняння з допуском
+        .GroupBy(s => s.AverageGrade)
+        .ToList();
+  }
+
+  public override string ToString()
+  {
+    return string.Join("\n", students.Select(s => s.ToShortString()));
+  }
+}
+
 
 class Program
 {
@@ -499,13 +715,139 @@ class Program
       Console.WriteLine(item);
     }
 
-    foreach (Test test in student.PassedTestsWithExam())
+    foreach (Test test1 in student.PassedTestsWithExam())
     {
-      Console.WriteLine(test);
+      Console.WriteLine(test1);
     }
 
+    Console.WriteLine("\nЛабораторна №3:");
+    Console.OutputEncoding = System.Text.Encoding.UTF8;
+
+    // --- 1. Створення об'єкта StudentCollection ---
+    StudentCollection studentCollection = new StudentCollection();
+
+    // --- 2. Додавання студентів ---
+    studentCollection.AddDefaults(); // або вручну, якщо нема такого методу:
+    studentCollection.AddStudents(
+        new Student(new Person("Anna", "Zelenska", new DateTime(2001, 5, 21)), Education.Bachelor, 80),
+        new Student(new Person("Bohdan", "Ivanchuk", new DateTime(1999, 11, 15)), Education.Master, 90),
+        new Student(new Person("Oleksii", "Petrenko", new DateTime(2000, 3, 10)), Education.SecondEducation, 75)
+    );
+
+    Console.WriteLine(">>> Початковий список студентів:\n" + studentCollection);
+
+    // --- 3. Сортування за прізвищем (IComparable) ---
+    studentCollection.SortBySurname();
+    Console.WriteLine(">>> Список після сортування за прізвищем:\n" + studentCollection);
+
+    // --- 4. Сортування за датою народження (IComparer<Person>) ---
+    studentCollection.SortByDate();
+    Console.WriteLine(">>> Список після сортування за датою народження:\n" + studentCollection);
+
+    // --- 5. Сортування за середнім балом (IComparer<Student>) ---
+    studentCollection.SortByAverageMark();
+    Console.WriteLine(">>> Список після сортування за середнім балом:\n" + studentCollection);
+
+    // --- 6. Обчислення максимального середнього балу ---
+    double maxAvg = studentCollection.MaxAverageMark;
+    Console.WriteLine($">>> Максимальний середній бал: {maxAvg}");
+
+    // --- 7. Фільтрація студентів з формою навчання Master ---
+    var masters = studentCollection.OnlyMasters;
+    Console.WriteLine(">>> Студенти з формою навчання Master:");
+    foreach (var student1 in masters)
+      Console.WriteLine(student1);
+
+    // --- 8. Групування за середнім балом ---
+    Console.WriteLine(">>> Групи студентів за середнім балом:");
+    foreach (var group in studentCollection.AverageMarkGroup(80))
+    {
+      Console.WriteLine($"Середній бал: {group.Key}");
+      foreach (var student2 in group)
+        Console.WriteLine(student2);
+    }
+
+    // --- 9. Тестування TestCollections ---
+    Console.WriteLine("\n>>> Тестування TestCollections:");
+    var testCollections = new TestCollections<Person, Student>(
+    10,
+    i =>
+    {
+      var person = new Person($"Name{i}", $"Surname{i}", new DateTime(2000, 1, 1).AddDays(i));
+      var student = new Student(person, Education.Bachelor, 101);
+      return (person, student);
+    }
+);
+
+    testCollections.TestSearchAll(0);  // перший елемент
+    testCollections.TestSearchAll(5);  // центральний елемент
+    testCollections.TestSearchAll(9);  // останній елемент
+    testCollections.TestSearchAll(100); // неіснуючий елемент
 
 
+
+    Console.WriteLine("\nЛабораторна №4:");
+    int count = 10000;
+
+    // Генерація тестових даних
+    List<Person> people = new List<Person>();
+    for (int i = 0; i < count; i++)
+    {
+      people.Add(new Person("Name" + i, "Surname" + i, new DateTime(1990, 1, 1).AddDays(i)));
+    }
+
+    // Ключі — Person, значення — Student
+    var keys = people;
+    var values = people.Select(p => new Student(p, Education.Bachelor, 101)).ToList();
+
+    // ==== Стандартні колекції ====
+    var sw = new Stopwatch();
+    sw.Start();
+    var standard = new TestCollections<Person, Student>(
+        count,  // The number of elements
+        i =>    // A function to generate a tuple (Person, Student)
+        {
+          var person = new Person($"Name{i}", $"Surname{i}", new DateTime(2000, 1, 1).AddDays(i));
+          var student = new Student(person, Education.Bachelor, 101);
+          return (person, student);  // Return a tuple (key, value)
+        }
+    );
+    sw.Stop();
+    Console.WriteLine($"Standard: додавання {count} елементів = {sw.ElapsedMilliseconds} мс");
+
+    // Accessing values from the DictKey dictionary
+    sw.Restart();
+    Console.WriteLine("Standard: Contains (перший): " + standard.DictKey.Values.Contains(values[0]));
+    sw.Stop();
+    Console.WriteLine($"Standard: пошук першого = {sw.ElapsedTicks} тік");
+
+    // ==== Immutable ====
+    sw.Restart();
+    var immutable = new TestCollectionsImmutable<Person, string>(
+        keys,
+        values.Select(v => v.ToString()).ToList() // конвертація Student -> string
+    );
+    sw.Stop();
+    Console.WriteLine($"Immutable: додавання {count} елементів = {sw.ElapsedMilliseconds} мс");
+
+    sw.Restart();
+    Console.WriteLine("Immutable: ContainsKey (перший): " + immutable.ContainsKey(keys[0]));
+    sw.Stop();
+    Console.WriteLine($"Immutable: пошук першого = {sw.ElapsedTicks} тік");
+
+    // ==== Sorted ====
+    sw.Restart();
+    var sorted = new TestCollectionsSorted<Person, string>(
+        keys,
+        values.Select(v => v.ToString()).ToList()
+    );
+    sw.Stop();
+    Console.WriteLine($"Sorted: додавання {count} елементів = {sw.ElapsedMilliseconds} мс");
+
+    sw.Restart();
+    Console.WriteLine("Sorted: ContainsKey (перший): " + sorted.ContainsKeyInList(keys[0]));
+    sw.Stop();
+    Console.WriteLine($"Sorted: пошук першого = {sw.ElapsedTicks} тік");
 
   }
 }

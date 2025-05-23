@@ -13,3 +13,6 @@ C:\Users\acer\Desktop\University\sem_3_2\net\lab_1\obj\Debug\net9.0\lab_1.pdb
 C:\Users\acer\Desktop\University\sem_3_2\net\lab_1\obj\Debug\net9.0\lab_1.genruntimeconfig.cache
 C:\Users\acer\Desktop\University\sem_3_2\net\lab_1\obj\Debug\net9.0\ref\lab_1.dll
 C:\Users\acer\Desktop\University\sem_3_2\net\lab_1\obj\Debug\net9.0\lab_1.sourcelink.json
+C:\Users\acer\Desktop\University\sem_3_2\net\lab_1\obj\Debug\net9.0\lab_1.csproj.AssemblyReference.cache
+C:\Users\acer\Desktop\University\sem_3_2\net\lab_1\bin\Debug\net9.0\Newtonsoft.Json.dll
+C:\Users\acer\Desktop\University\sem_3_2\net\lab_1\obj\Debug\net9.0\lab_1.csproj.Up2Date

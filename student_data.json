@@ -1,0 +1,28 @@
+{
+  "Date": "0001-01-01T00:00:00",
+  "Students": {},
+  "PersonalInfo": {
+    "Name": "Unknown",
+    "Surname": "Unknown",
+    "BirthDate": "2025-05-22T19:16:58.3951467+03:00"
+  },
+  "Education": 1,
+  "Group": 101,
+  "Exams": [
+    {
+      "Subject": "\u043C\u0430\u0442\u0435\u043C",
+      "Grade": 90,
+      "ExamDate": "2023-09-08T00:00:00"
+    }
+  ],
+  "Tests": [],
+  "AverageGrade": 90,
+  "BaseKey": {
+    "Name": "Unknown",
+    "Surname": "Unknown",
+    "BirthDate": "2025-05-22T19:16:58.3951467+03:00"
+  },
+  "Name": "Unknown",
+  "Surname": "Unknown",
+  "BirthDate": "2025-05-22T19:16:58.3951467+03:00"
+}

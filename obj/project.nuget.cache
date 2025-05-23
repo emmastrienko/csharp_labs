@@ -1,8 +1,10 @@
 {
   "version": 2,
-  "dgSpecHash": "FvXrgN/bmQM=",
+  "dgSpecHash": "HmPKvs8iR/w=",
   "success": true,
   "projectFilePath": "C:\\Users\\acer\\Desktop\\University\\sem_3_2\\net\\lab_1\\lab_1.csproj",
-  "expectedPackageFiles": [],
+  "expectedPackageFiles": [
+    "C:\\Users\\acer\\.nuget\\packages\\newtonsoft.json\\13.0.3\\newtonsoft.json.13.0.3.nupkg.sha512"
+  ],
   "logs": []
 }
